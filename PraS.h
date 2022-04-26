@@ -18,7 +18,8 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 	virtual void onUnload();
 
 	void createNameTable();
-	void updateCamera(std::string);
+	void updatePlayerCam(std::string);
+	void updateAutoCam(std::string);
 	// Inherited via PluginSettingsWindow
 	/*
 	void RenderSettings() override;
@@ -48,6 +49,7 @@ private:
 	std::string PlayerNames[10];
 	bool onAutoCam = false;
 	bool onPlayerView = false;
+	std::string currentFocusActorName = "";
 };
 
 

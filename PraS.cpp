@@ -26,7 +26,7 @@ void PraS::onLoad()
 	gameWrapper->HookEvent("Function TAGame.Camera_Replay_TA.SetFocusActor", [this](std::string eventName) {
 		onAutoCam = true;
 		//autoCam
-		updateCamera(eventName);
+		updateAutoCam(eventName);
 		onAutoCam = false;
 		});
 	//Function GameFramework.GameThirdPersonCamera.GetFocusActor
@@ -35,7 +35,7 @@ void PraS::onLoad()
 	gameWrapper->HookEvent("Function TAGame.Camera_TA.OnViewTargetChanged", [this](std::string eventName) {
 		onPlayerView = true;
 		//cvarManager->log("FindFocus");
-		updateCamera(eventName);
+		updatePlayerCam(eventName);
 		onPlayerView = false;
 	});
 	//Function TAGame.CameraState_DirectorPlayerView_TA.FindFocusCar
@@ -97,7 +97,7 @@ void PraS::createNameTable()
 	}
 }
 
-void PraS::updateCamera(std::string eventName) {
+void PraS::updatePlayerCam(std::string eventName) {
 	ServerWrapper server = gameWrapper->GetOnlineGame();
 	CameraWrapper camera = gameWrapper->GetCamera();
 	auto replaydirector = server.GetReplayDirector();
@@ -123,6 +123,17 @@ void PraS::updateCamera(std::string eventName) {
 	auto pl = PlayerMap[actorName];
 	gameWrapper->LogToChatbox(actorName);
 	//gameWrapper->LogToChatbox(std::to_string(pl->GetMatchScore()));
+}
+
+void PraS::updateAutoCam(std::string eventName){
+	ServerWrapper server = gameWrapper->GetOnlineGame();
+	CameraWrapper camera = gameWrapper->GetCamera();
+	auto actorName = camera.GetFocusActor();
+	auto cameraState = camera.GetCameraState();
+	if(cameraState.find("Car") != std::string:npos){
+		//Found
+		currentFocusActorName = actorName;
+	}
 }
 void PraS::onUnload()
 {
