@@ -20,6 +20,12 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 	void createNameTable();
 	void updatePlayerCam(std::string);
 	void updateAutoCam(std::string);
+	void updateScore(std::string);
+	void startGame(std::string);
+	void scored(std::string);
+	void initSocket();
+	void endSocket();
+	bool sendSocket(std::string);
 	// Inherited via PluginSettingsWindow
 	/*
 	void RenderSettings() override;
@@ -45,11 +51,17 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 	
 	*/
 private:
+	int PORT = 12345;
+	std::string ADDR = "127.0.0.1";
 	std::map<std::string,std::shared_ptr<PriWrapper>> PlayerMap;
 	std::string PlayerNames[10];
 	bool onAutoCam = false;
 	bool onPlayerView = false;
+	int currentFocusActorScore = 0;
+	std::string preAutoCamActorName = "";
 	std::string currentFocusActorName = "";
+	int preFocusActorScore = 0;
+	int dst_socket;
 };
 
 

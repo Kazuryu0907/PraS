@@ -2,6 +2,8 @@
 #include "PraS.h"
 #include <iostream>
 #include <sstream>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
 BAKKESMOD_PLUGIN(PraS, "write a plugin description here", plugin_version, PLUGINTYPE_SPECTATOR)
 
@@ -13,64 +15,88 @@ void PraS::onLoad()
 	cvarManager->log("Plugin loaded!");
 	if (!gameWrapper->IsInOnlineGame()) {
 		cvarManager->log("you are not in Online");
-		return;
 	}
 	else {
 		cvarManager->log("you are in Online");
 	}
-	ServerWrapper server = gameWrapper->GetOnlineGame();
-	CameraWrapper camera = gameWrapper->GetCamera();
-	const ViewTarget &v = camera.GetViewTarget();
 	createNameTable();
-	cvarManager->log(camera.GetFocusActor());
-	gameWrapper->HookEvent("Function TAGame.Camera_Replay_TA.SetFocusActor", [this](std::string eventName) {
-		onAutoCam = true;
-		//autoCam
-		updateAutoCam(eventName);
-		onAutoCam = false;
-		});
+	gameWrapper->LogToChatbox("initSock");
+	//initSocket();
+	sendSocket("send");
+	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnGameTimeUpdated", std::bind(&PraS::updateScore, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function TAGame.Camera_Replay_TA.SetFocusActor", std::bind(&PraS::updateAutoCam, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function TAGame.Camera_TA.OnViewTargetChanged", std::bind(&PraS::updatePlayerCam, this, std::placeholders::_1));
+	//Function GameEvent_Soccar_TA.Active.StartRound
+	gameWrapper->HookEvent("Function GameEvent_Soccar_TA.Active.BeginState", std::bind(&PraS::startGame, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventPlayerScored", std::bind(&PraS::scored, this, std::placeholders::_1));
+//Function TAGame.GameEvent_Soccar_TA.EventPlayerScored
 	//Function GameFramework.GameThirdPersonCamera.GetFocusActor
 	//
 	//Function TAGame.Camera_Replay_TA.UpdateCameraState already
-	gameWrapper->HookEvent("Function TAGame.Camera_TA.OnViewTargetChanged", [this](std::string eventName) {
-		onPlayerView = true;
-		//cvarManager->log("FindFocus");
-		updatePlayerCam(eventName);
-		onPlayerView = false;
-	});
+
 	//Function TAGame.CameraState_DirectorPlayerView_TA.FindFocusCar
 	//Function TAGame.GFxData_ReplayViewer_TA.SetFocusActorString
 	//Function TAGame.CameraState_Director_TA.UpdateSelector
 	//Function TAGame.ReplayDirector_TA.EventScoreDataChanged
 	
-	//auto cvar = cvarManager->registerCvar("template_cvar", "hello-cvar", "just a example of a cvar");
-	//auto cvar2 = cvarManager->registerCvar("template_cvar2", "0", "just a example of a cvar with more settings", true, true, -10, true, 10 );
-
-	//cvar.addOnValueChanged([this](std::string cvarName, CVarWrapper newCvar) {
-	//	cvarManager->log("the cvar with name: " + cvarName + " changed");
-	//	cvarManager->log("the new value is:" + newCvar.getStringValue());
-	//});
-
-	//cvar2.addOnValueChanged(std::bind(&PraS::YourPluginMethod, this, _1, _2));
-
-	// enabled decleared in the header
-	//enabled = std::make_shared<bool>(false);
-	//cvarManager->registerCvar("TEMPLATE_Enabled", "0", "Enable the TEMPLATE plugin", true, true, 0, true, 1).bindTo(enabled);
-
-	//cvarManager->registerNotifier("NOTIFIER", [this](std::vector<std::string> params){FUNCTION();}, "DESCRIPTION", PERMISSION_ALL);
-	//cvarManager->registerCvar("CVAR", "DEFAULTVALUE", "DESCRIPTION", true, true, MINVAL, true, MAXVAL);//.bindTo(CVARVARIABLE);
-	//gameWrapper->HookEvent("FUNCTIONNAME", std::bind(&TEMPLATE::FUNCTION, this));
-	//gameWrapper->HookEventWithCallerPost<ActorWrapper>("FUNCTIONNAME", std::bind(&PraS::FUNCTION, this, _1, _2, _3));
-	//gameWrapper->RegisterDrawable(bind(&TEMPLATE::Render, this, std::placeholders::_1));
-
-
-	//gameWrapper->HookEvent("Function TAGame.Ball_TA.Explode", [this](std::string eventName) {
-	//	cvarManager->log("Your hook got called and the ball went POOF");
-	//});
-	// You could also use std::bind here
-	//gameWrapper->HookEvent("Function TAGame.Ball_TA.Explode", std::bind(&PraS::YourPluginMethod, this);
 }
+/*
+void PraS::initSocket() {
+	gameWrapper->LogToChatbox("initSock");
+	WSADATA wsaData;
+	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
+		cvarManager->log("Winsock init error");
+	}
+	char serverIpAddr[] = "127.0.0.1";
+	int port = 12345;
+	struct sockaddr_in dst_addr;
+	memset(&dst_addr,0,sizeof(dst_addr));
+	dst_addr.sin_port = htons(port);
+	dst_addr.sin_family = AF_INET;
+	inet_pton(dst_addr.sin_family,serverIpAddr,&dst_addr.sin_addr.s_addr);
+	dst_socket = socket(AF_INET,SOCK_STREAM,0);
 
+	if (connect(dst_socket, (struct sockaddr*) & dst_addr, sizeof(dst_addr))) {
+		cvarManager->log("socket error");
+		return;
+	}
+	std::string str = "hello";
+	cvarManager->log(str);
+	send(dst_socket,str.c_str(),5,0);
+}
+*/
+bool PraS::sendSocket(std::string str) {
+	WSADATA wsaData;
+	struct sockaddr_in server;
+	SOCKET sock;
+	char buf[32];
+	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
+		cvarManager->log("send error");
+		return false;
+	}
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	server.sin_family = AF_INET;
+	server.sin_port = htons(PORT);
+	inet_pton(server.sin_family,ADDR.c_str(),&server.sin_addr.s_addr);
+	connect(sock, (struct sockaddr*) & server, sizeof(server));
+	bool res = send(sock, str.c_str(), str.length(), 0);
+	WSACleanup();
+	return res;
+}
+void PraS::endSocket() {
+	closesocket(dst_socket);
+	WSACleanup();
+}
+void PraS::scored(std::string eventName) {
+	std::string msg = "scored";
+	sendSocket("scored");
+}
+void PraS::startGame(std::string eventName) {
+	gameWrapper->LogToChatbox("Start GAme");
+	//createNameTable();
+	//CameraWrapper camera = gameWrapper->GetCamera();
+	//camera.SetFocusActor(PlayerNames[0]);
+}
 void PraS::createNameTable()
 {
 	ServerWrapper sw = gameWrapper->GetOnlineGame();
@@ -91,38 +117,39 @@ void PraS::createNameTable()
 		}
 		PlayerNames[i] = name;
 		cvarManager->log(name);
-		gameWrapper->LogToChatbox(name);
+		//gameWrapper->LogToChatbox(name);
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		PlayerMap[name] = ppl;
 	}
 }
 
+void PraS::updateScore(std::string eventName) {
+	//cvarManager->log("updateScore:"+ currentFocusActorName);
+	if (PlayerMap.count(currentFocusActorName) == 0) {
+		cvarManager->log("Name is 0");
+		return;
+	}
+	auto pl = PlayerMap[currentFocusActorName];
+	currentFocusActorScore = pl->GetMatchScore();
+	if (currentFocusActorScore != preFocusActorScore) {
+		std::string msg = currentFocusActorName + ":" + std::to_string(currentFocusActorScore);
+		sendSocket(std::to_string(currentFocusActorScore));
+	}
+	preFocusActorScore = currentFocusActorScore;
+	//cvarManager->log(currentFocusActorName+std::to_string(currentFocusActorScore));
+}
 void PraS::updatePlayerCam(std::string eventName) {
 	ServerWrapper server = gameWrapper->GetOnlineGame();
 	CameraWrapper camera = gameWrapper->GetCamera();
 	auto replaydirector = server.GetReplayDirector();
 	auto actorName = camera.GetFocusActor();
 	auto cameraState = camera.GetCameraState();
-	if (cameraState != "CameraState_Car_TA") {
-
+	if (cameraState.find("Car") != std::string::npos) {
+		currentFocusActorName = actorName;
+		cvarManager->log(cameraState +actorName);
 	}
-	auto view = camera.GetViewTarget();
-	auto cont = gameWrapper->GetPlayerController();
-	auto contpri = cont.GetFollowTarget();
-	//gameWrapper->LogToChatbox(actorName);
-	if (onAutoCam && onPlayerView) gameWrapper->LogToChatbox("DOUBLE!");
-	ActorWrapper focusCar = replaydirector.GetFocusCar();
-	std::stringstream ss;
-	for (const auto& item : actorName) {
-		ss << std::hex << int(item);
-	}
-	cvarManager->log(ss.str());
-	//gameWrapper->LogToChatbox(std::to_string(PlayerMap.count(actorName)));
-	gameWrapper->LogToChatbox(eventName);
 	if (PlayerMap.count(actorName) == 0)return;
 	auto pl = PlayerMap[actorName];
-	gameWrapper->LogToChatbox(actorName);
-	//gameWrapper->LogToChatbox(std::to_string(pl->GetMatchScore()));
 }
 
 void PraS::updateAutoCam(std::string eventName){
@@ -130,11 +157,20 @@ void PraS::updateAutoCam(std::string eventName){
 	CameraWrapper camera = gameWrapper->GetCamera();
 	auto actorName = camera.GetFocusActor();
 	auto cameraState = camera.GetCameraState();
-	if(cameraState.find("Car") != std::string:npos){
+	if (cameraState.find("Car") == std::string::npos) {
 		//Found
+		if (actorName == preAutoCamActorName) {
+			cvarManager->log("double");
+			cvarManager->log("new:"+ camera.GetFocusActor());
+		}
 		currentFocusActorName = actorName;
+		cvarManager->log(cameraState + actorName);
 	}
+	preAutoCamActorName = actorName;
 }
+
+
 void PraS::onUnload()
 {
+	endSocket();
 }
