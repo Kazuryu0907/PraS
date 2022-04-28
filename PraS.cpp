@@ -2,8 +2,7 @@
 #include "PraS.h"
 #include <iostream>
 #include <sstream>
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <thread>
 
 BAKKESMOD_PLUGIN(PraS, "write a plugin description here", plugin_version, PLUGINTYPE_SPECTATOR)
 
@@ -20,9 +19,9 @@ void PraS::onLoad()
 		cvarManager->log("you are in Online");
 	}
 	createNameTable();
-	gameWrapper->LogToChatbox("initSock");
-	//initSocket();
-	sendSocket("send");
+	cvarManager->log("init Sock");
+	initSocket();
+	sendSocket("init");
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnGameTimeUpdated", std::bind(&PraS::updateScore, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.Camera_Replay_TA.SetFocusActor", std::bind(&PraS::updateAutoCam, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.Camera_TA.OnViewTargetChanged", std::bind(&PraS::updatePlayerCam, this, std::placeholders::_1));
@@ -40,36 +39,7 @@ void PraS::onLoad()
 	//Function TAGame.ReplayDirector_TA.EventScoreDataChanged
 	
 }
-/*
-void PraS::initSocket() {
-	gameWrapper->LogToChatbox("initSock");
-	WSADATA wsaData;
-	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
-		cvarManager->log("Winsock init error");
-	}
-	char serverIpAddr[] = "127.0.0.1";
-	int port = 12345;
-	struct sockaddr_in dst_addr;
-	memset(&dst_addr,0,sizeof(dst_addr));
-	dst_addr.sin_port = htons(port);
-	dst_addr.sin_family = AF_INET;
-	inet_pton(dst_addr.sin_family,serverIpAddr,&dst_addr.sin_addr.s_addr);
-	dst_socket = socket(AF_INET,SOCK_STREAM,0);
-
-	if (connect(dst_socket, (struct sockaddr*) & dst_addr, sizeof(dst_addr))) {
-		cvarManager->log("socket error");
-		return;
-	}
-	std::string str = "hello";
-	cvarManager->log(str);
-	send(dst_socket,str.c_str(),5,0);
-}
-*/
-bool PraS::sendSocket(std::string str) {
-	WSADATA wsaData;
-	struct sockaddr_in server;
-	SOCKET sock;
-	char buf[32];
+/*	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
 		cvarManager->log("send error");
 		return false;
@@ -77,10 +47,45 @@ bool PraS::sendSocket(std::string str) {
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	server.sin_family = AF_INET;
 	server.sin_port = htons(PORT);
-	inet_pton(server.sin_family,ADDR.c_str(),&server.sin_addr.s_addr);
+	inet_pton(server.sin_family, ADDR.c_str(), &server.sin_addr.s_addr);
 	connect(sock, (struct sockaddr*) & server, sizeof(server));
+	return true;
+*/
+void PraS::initSocket() {
+	WSADATA wsaData;
+	struct sockaddr_in server;
+	char buf[32];
+	cvarManager->log("initilizing socket...");
+	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
+		cvarManager->log("send error");
+		return;
+	}
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	server.sin_family = AF_INET;
+	server.sin_port = htons(PORT);
+	inet_pton(server.sin_family, ADDR.c_str(), &server.sin_addr.s_addr);
+	connect(sock, (struct sockaddr*) & server, sizeof(server));
+	//WSACleanup();
+}
+/*		WSADATA wsaData;
+	struct sockaddr_in server;
+	char buf[32];
+	cvarManager->log("initilizing socket...");
+	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
+		cvarManager->log("send error");
+		return;
+	}
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	server.sin_family = AF_INET;
+	server.sin_port = htons(PORT);
+	inet_pton(server.sin_family, ADDR.c_str(), &server.sin_addr.s_addr);
+	connect(sock, (struct sockaddr*) & server, sizeof(server));
+	send(sock, msg.c_str(), msg.length(), 0);
+	WSACleanup();*/
+/*
+*/
+bool PraS::sendSocket(std::string str) {
 	bool res = send(sock, str.c_str(), str.length(), 0);
-	WSACleanup();
 	return res;
 }
 void PraS::endSocket() {
@@ -92,10 +97,8 @@ void PraS::scored(std::string eventName) {
 	sendSocket("scored");
 }
 void PraS::startGame(std::string eventName) {
-	gameWrapper->LogToChatbox("Start GAme");
-	//createNameTable();
-	//CameraWrapper camera = gameWrapper->GetCamera();
-	//camera.SetFocusActor(PlayerNames[0]);
+	//gameWrapper->LogToChatbox("Start GAme");
+	createNameTable();
 }
 void PraS::createNameTable()
 {
@@ -124,7 +127,6 @@ void PraS::createNameTable()
 }
 
 void PraS::updateScore(std::string eventName) {
-	//cvarManager->log("updateScore:"+ currentFocusActorName);
 	if (PlayerMap.count(currentFocusActorName) == 0) {
 		cvarManager->log("Name is 0");
 		return;
@@ -133,7 +135,7 @@ void PraS::updateScore(std::string eventName) {
 	currentFocusActorScore = pl->GetMatchScore();
 	if (currentFocusActorScore != preFocusActorScore) {
 		std::string msg = currentFocusActorName + ":" + std::to_string(currentFocusActorScore);
-		sendSocket(std::to_string(currentFocusActorScore));
+		sendSocket(currentFocusActorName+":"+std::to_string(currentFocusActorScore));
 	}
 	preFocusActorScore = currentFocusActorScore;
 	//cvarManager->log(currentFocusActorName+std::to_string(currentFocusActorScore));

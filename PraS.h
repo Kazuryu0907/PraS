@@ -3,6 +3,8 @@
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "bakkesmod/plugin/pluginwindow.h"
 #include "bakkesmod/plugin/PluginSettingsWindow.h"
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
 #include "version.h"
 constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
@@ -53,6 +55,8 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 private:
 	int PORT = 12345;
 	std::string ADDR = "127.0.0.1";
+	SOCKET sock;
+	struct sockaddr_in server;
 	std::map<std::string,std::shared_ptr<PriWrapper>> PlayerMap;
 	std::string PlayerNames[10];
 	bool onAutoCam = false;
@@ -62,6 +66,8 @@ private:
 	std::string currentFocusActorName = "";
 	int preFocusActorScore = 0;
 	int dst_socket;
+	std::string preMsg = "";
+	std::string msg = "";
 };
 
 
