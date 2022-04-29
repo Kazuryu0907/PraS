@@ -4,20 +4,12 @@
 #include <sstream>
 #include <thread>
 
-BAKKESMOD_PLUGIN(PraS, "write a plugin description here", plugin_version, PLUGINTYPE_SPECTATOR)
+BAKKESMOD_PLUGIN(PraS, "PraS(Private match artistic Stream)", plugin_version, PLUGINTYPE_SPECTATOR)
 
 std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
 
 void PraS::onLoad()
 {
-	gameWrapper->LogToChatbox("chat box");
-	cvarManager->log("Plugin loaded!");
-	if (!gameWrapper->IsInOnlineGame()) {
-		cvarManager->log("you are not in Online");
-	}
-	else {
-		cvarManager->log("you are in Online");
-	}
 	createNameTable();
 	cvarManager->log("init Sock");
 	initSocket();
@@ -119,7 +111,7 @@ void PraS::createNameTable()
 			cvarManager->log(ss.str());
 		}
 		PlayerNames[i] = name;
-		cvarManager->log(name);
+		//cvarManager->log(name);
 		//gameWrapper->LogToChatbox(name);
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		PlayerMap[name] = ppl;

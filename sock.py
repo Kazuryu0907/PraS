@@ -1,7 +1,5 @@
-from http import client
 import socket
 import threading
-from tkinter.tix import TEXT
 
 from obswebsocket import obsws, requests
 functions = ["getChatlog","getExtents","getColor","getText","getGradient_opacity","getBk_color","getFile","getFont","getGradient","getSource","getRead_from_file",
@@ -99,4 +97,8 @@ def main():
             thread.start()
     ws.disconnect()
 
-main()
+#main()
+ws.connect()
+list = ws.call(requests.GetSceneItemList())
+for i in list.getSceneItems():
+    print(i)
