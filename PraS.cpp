@@ -57,25 +57,8 @@ void PraS::initSocket() {
 	server.sin_port = htons(PORT);
 	inet_pton(server.sin_family, ADDR.c_str(), &server.sin_addr.s_addr);
 	connect(sock, (struct sockaddr*) & server, sizeof(server));
-	//WSACleanup();
 }
-/*		WSADATA wsaData;
-	struct sockaddr_in server;
-	char buf[32];
-	cvarManager->log("initilizing socket...");
-	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
-		cvarManager->log("send error");
-		return;
-	}
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-	server.sin_family = AF_INET;
-	server.sin_port = htons(PORT);
-	inet_pton(server.sin_family, ADDR.c_str(), &server.sin_addr.s_addr);
-	connect(sock, (struct sockaddr*) & server, sizeof(server));
-	send(sock, msg.c_str(), msg.length(), 0);
-	WSACleanup();*/
-/*
-*/
+
 bool PraS::sendSocket(std::string str) {
 	bool res = send(sock, str.c_str(), str.length(), 0);
 	return res;
@@ -89,8 +72,11 @@ void PraS::scored(std::string eventName) {
 	sendSocket("scored");
 }
 void PraS::startGame(std::string eventName) {
-	//gameWrapper->LogToChatbox("Start GAme");
 	createNameTable();
+	ServerWrapper server = gameWrapper->GetOnlineGame();
+	CameraWrapper camera = gameWrapper->GetCamera();
+	auto actorName = camera.GetFocusActor();
+	currentFocusActorName = actorName;
 }
 void PraS::createNameTable()
 {
@@ -111,8 +97,6 @@ void PraS::createNameTable()
 			cvarManager->log(ss.str());
 		}
 		PlayerNames[i] = name;
-		//cvarManager->log(name);
-		//gameWrapper->LogToChatbox(name);
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		PlayerMap[name] = ppl;
 	}
@@ -127,7 +111,8 @@ void PraS::updateScore(std::string eventName) {
 	currentFocusActorScore = pl->GetMatchScore();
 	if (currentFocusActorScore != preFocusActorScore) {
 		std::string msg = currentFocusActorName + ":" + std::to_string(currentFocusActorScore);
-		sendSocket(currentFocusActorName+":"+std::to_string(currentFocusActorScore));
+		//sendSocket(currentFocusActorName+":"+std::to_string(currentFocusActorScore));
+		sendSocket(std::to_string(currentFocusActorScore));
 	}
 	preFocusActorScore = currentFocusActorScore;
 	//cvarManager->log(currentFocusActorName+std::to_string(currentFocusActorScore));
@@ -135,15 +120,12 @@ void PraS::updateScore(std::string eventName) {
 void PraS::updatePlayerCam(std::string eventName) {
 	ServerWrapper server = gameWrapper->GetOnlineGame();
 	CameraWrapper camera = gameWrapper->GetCamera();
-	auto replaydirector = server.GetReplayDirector();
 	auto actorName = camera.GetFocusActor();
 	auto cameraState = camera.GetCameraState();
 	if (cameraState.find("Car") != std::string::npos) {
 		currentFocusActorName = actorName;
-		cvarManager->log(cameraState +actorName);
+		//cvarManager->log(cameraState +actorName);
 	}
-	if (PlayerMap.count(actorName) == 0)return;
-	auto pl = PlayerMap[actorName];
 }
 
 void PraS::updateAutoCam(std::string eventName){
@@ -154,11 +136,11 @@ void PraS::updateAutoCam(std::string eventName){
 	if (cameraState.find("Car") == std::string::npos) {
 		//Found
 		if (actorName == preAutoCamActorName) {
-			cvarManager->log("double");
-			cvarManager->log("new:"+ camera.GetFocusActor());
+			//cvarManager->log("double");
+			//cvarManager->log("new:"+ camera.GetFocusActor());
 		}
 		currentFocusActorName = actorName;
-		cvarManager->log(cameraState + actorName);
+		//cvarManager->log(cameraState + actorName);
 	}
 	preAutoCamActorName = actorName;
 }
