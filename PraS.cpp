@@ -2,7 +2,10 @@
 #include "PraS.h"
 #include <iostream>
 #include <sstream>
+#include <istream>
 #include <thread>
+#include <regex>
+#include <vector>
 
 BAKKESMOD_PLUGIN(PraS, "PraS(Private match artistic Stream)", plugin_version, PLUGINTYPE_SPECTATOR)
 
@@ -31,18 +34,7 @@ void PraS::onLoad()
 	//Function TAGame.ReplayDirector_TA.EventScoreDataChanged
 	
 }
-/*	WSADATA wsaData;
-	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != 0) {
-		cvarManager->log("send error");
-		return false;
-	}
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-	server.sin_family = AF_INET;
-	server.sin_port = htons(PORT);
-	inet_pton(server.sin_family, ADDR.c_str(), &server.sin_addr.s_addr);
-	connect(sock, (struct sockaddr*) & server, sizeof(server));
-	return true;
-*/
+
 void PraS::initSocket() {
 	WSADATA wsaData;
 	struct sockaddr_in server;
@@ -78,6 +70,19 @@ void PraS::startGame(std::string eventName) {
 	auto actorName = camera.GetFocusActor();
 	currentFocusActorName = actorName;
 }
+
+std::string PraS::split(const std::string& s) {
+	std::vector<std::string> elems;
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, '|')) {
+		if (!item.empty()) {
+			elems.push_back(item);
+		}
+	}
+	if (elems.size() != 3)return "";
+	return elems[1];
+}
 void PraS::createNameTable()
 {
 	ServerWrapper sw = gameWrapper->GetOnlineGame();
@@ -88,9 +93,10 @@ void PraS::createNameTable()
 		if (pl.IsNull())continue;
 		std::string name;
 		name = pl.GetUniqueIdWrapper().GetIdString();
+		std::string id = split(name);
 		if (pl.GetbBot())name = "Player_Bot_" + pl.GetOldName().ToString();
 		else name = "Player_" + name;
-		PlayerNames[i] = name;
+		PlayerNames[i] = id;
 		PlayerToDisplayName[name] = pl.GetOldName().ToString();
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		PlayerMap[name] = ppl;

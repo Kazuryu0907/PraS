@@ -28,6 +28,7 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 	void initSocket();
 	void endSocket();
 	bool sendSocket(std::string);
+	std::string split(const std::string& s);
 	// Inherited via PluginSettingsWindow
 	/*
 	void RenderSettings() override;
