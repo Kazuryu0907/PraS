@@ -59,6 +59,7 @@ private:
 	struct sockaddr_in server;
 	std::map<std::string,std::shared_ptr<PriWrapper>> PlayerMap;
 	std::string PlayerNames[10];
+	std::map<std::string, std::string> PlayerToDisplayName;
 	bool onAutoCam = false;
 	bool onPlayerView = false;
 	int currentFocusActorScore = 0;

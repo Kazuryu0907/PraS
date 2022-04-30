@@ -88,15 +88,10 @@ void PraS::createNameTable()
 		if (pl.IsNull())continue;
 		std::string name;
 		name = pl.GetUniqueIdWrapper().GetIdString();
-		if (pl.GetbBot())name = "Player_Bot_"+pl.GetOldName().ToString();
-		else {
-			std::stringstream ss;
-			for (const auto& item : name) {
-				ss << std::hex << int(item);
-			}
-			cvarManager->log(ss.str());
-		}
+		if (pl.GetbBot())name = "Player_Bot_" + pl.GetOldName().ToString();
+		else name = "Player_" + name;
 		PlayerNames[i] = name;
+		PlayerToDisplayName[name] = pl.GetOldName().ToString();
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		PlayerMap[name] = ppl;
 	}
@@ -104,6 +99,7 @@ void PraS::createNameTable()
 
 void PraS::updateScore(std::string eventName) {
 	if (PlayerMap.count(currentFocusActorName) == 0) {
+		cvarManager->log(currentFocusActorName);
 		cvarManager->log("Name is 0");
 		return;
 	}
@@ -111,8 +107,8 @@ void PraS::updateScore(std::string eventName) {
 	currentFocusActorScore = pl->GetMatchScore();
 	if (currentFocusActorScore != preFocusActorScore) {
 		std::string msg = currentFocusActorName + ":" + std::to_string(currentFocusActorScore);
-		//sendSocket(currentFocusActorName+":"+std::to_string(currentFocusActorScore));
-		sendSocket(std::to_string(currentFocusActorScore));
+		sendSocket(PlayerToDisplayName[currentFocusActorName]+":"+std::to_string(currentFocusActorScore));
+		//sendSocket(std::to_string(currentFocusActorScore));
 	}
 	preFocusActorScore = currentFocusActorScore;
 	//cvarManager->log(currentFocusActorName+std::to_string(currentFocusActorScore));

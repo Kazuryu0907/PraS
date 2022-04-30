@@ -1,6 +1,5 @@
 import socket
 import threading
-
 from obswebsocket import obsws, requests
 functions = ["getChatlog","getExtents","getColor","getText","getGradient_opacity","getBk_color","getFile","getFont","getGradient","getSource","getRead_from_file",
     "getValign","getVertical","getExtents_cy","getExtents_cx","getBk_opacity","getGradient_dir","getChatlog_lines","getGradient_color","getOutline_size","getOutline_color","getOutline","getAlign","getOutline_opacity"]
@@ -77,11 +76,11 @@ def recvData(data):
     elif data == "init":
         print("connected!")
     else:# score and usename
-        #data = data.split(":")
+        data = data.split(":")
         name = data[0]
-        #score = data[1]
-        #changeText(TEXT_NAME,name)
-        changeText(TEXT_SCORE,data)
+        score = data[1]
+        changeText(TEXT_NAME,name)
+        changeText(TEXT_SCORE,score)
 
 def loop_handler(conn,addr):
     while 1:
@@ -133,10 +132,11 @@ def main():
             thread.start()
     ws.disconnect()
 
-main()
 """
 ws.connect()
 list = ws.call(requests.GetSceneItemList())
 for i in list.getSceneItems():
     print(i)
+list = ws.call(requests.SetMediaTime("pras_icons",300))
+ws.call(requests.SetMediaTime)
 """
