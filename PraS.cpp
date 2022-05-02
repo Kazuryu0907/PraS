@@ -44,7 +44,7 @@ void PraS::initSocket() {
 		cvarManager->log("send error");
 		return;
 	}
-	sock = socket(AF_INET, SOCK_STREAM, 0);
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	server.sin_family = AF_INET;
 	server.sin_port = htons(PORT);
 	inet_pton(server.sin_family, ADDR.c_str(), &server.sin_addr.s_addr);
@@ -93,10 +93,13 @@ void PraS::createNameTable()
 		if (pl.IsNull())continue;
 		std::string name;
 		name = pl.GetUniqueIdWrapper().GetIdString();
-		std::string id = split(name);
+		//std::string id = split(name);
 		if (pl.GetbBot())name = "Player_Bot_" + pl.GetOldName().ToString();
 		else name = "Player_" + name;
-		PlayerNames[i] = id;
+		PlayerNames[i] = pl.GetOldName().ToString();
+		//DEBUG
+		//PlayerNames[i] = std::to_string(i);
+		//PlayerToDisplayName[name] = std::to_string(i);
 		PlayerToDisplayName[name] = pl.GetOldName().ToString();
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		PlayerMap[name] = ppl;
