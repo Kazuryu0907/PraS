@@ -1,8 +1,19 @@
-#Comment
+#画像サイズ
+WIDTH:500
+HEIGHT:500
+#以下アイコン設定
 TEMP:cry.png
-1 : 1.png
-2 :2.png
-3 :3.png
-4 :4.png
-5 :5.png
-6 :6.png
+1:a1.png
+2:a2.png
+3:a3.png
+4:a4.png
+5:a5.png
+6:a6.png
+Awake DRIVE.:drive.webp
+blackrainspiral:kuro.webp 
+DaihukuOmochiya:sam.webp
+KatsuragiMio:mio.webp
+shiromaniは勇者である:shiro.webp
+まんごーぱふぇ:kairi.webp
+たんく:tank.webp
+tenpuraaaa:cry.png

@@ -1,6 +1,6 @@
 import socket
 from obswebsocket import obsws, requests
-
+from bs4 import BeautifulSoup 
 import pyvirtualcam
 import numpy as np
 import cv2
@@ -41,8 +41,8 @@ password = "password"
 TEXT_SCORE = "pras_score"
 MEDIA_NAME = "pras_goal"
 
-WIDTH = 500
-HEIGHT = 500
+WIDTH = 256
+HEIGHT = 256
 
 TextProps = {TEXT_SCORE:{}}
 imageTables = {}
@@ -51,27 +51,39 @@ lastImg = ""
 
 
 ws = obsws(host, port, password)
-
+soup = BeautifulSoup(open("./templates/index.html"),"html.parser")
+imgSoup = soup.find("img")
 #以下ループ
 
-def recvData(data,cam):
+def recvData(data):
     global lastImg
     if data == "scored":
         ws.call(requests.RestartMedia(MEDIA_NAME))
+        #changeImage()
+        #changeText()
     elif data == "init":
         print("connected!")
     else:# score and usename
-        data = data.split(":")
-        name = data[0]
-        score = data[1]
-        file = imageTables[name]
-        if lastImg != file:
-            cam.send(npImageTables[name])
-        changeText(TEXT_SCORE,score)
-        lastImg = file
-
-
-
+        try:
+            data = data.split(":")
+            name = data[0]
+            score = data[1]
+            file = imageTables[name]
+            if lastImg != file:
+                print(file)
+                changeImage(file)
+            changeText(TEXT_SCORE,score)
+            lastImg = file
+        except Exception as e:
+            print(e)
+def changeImage(file):
+    path = "images/"+file
+    imgSoup["src"] = path
+    with open("./templates/index.html",mode="w") as f:
+        f.write(str(soup))
+    #ws.call(requests.RefreshBrowserSource("pras_icons"))
+    ws.call(requests.SetSceneItemRender("pras_icons",render=False))
+    ws.call(requests.SetSceneItemRender("pras_icons",render=True))
 def initText(source):
     txt = ws.call(requests.GetTextGDIPlusProperties(source))
     for func in functions:
@@ -88,46 +100,54 @@ def changeText(source,text):
     return res
 
 def readTable():
-    import re
     global imageTables
     path = "table.txt"
-    with open(path,mode="r") as f:
+    HEIGHT = 0
+    WIDTH = 0
+    with open(path,mode="r",encoding="utf-8") as f:
         lines = f.readlines()
         for line in lines:
             if line[0] != "#":#not comment
-                line = re.sub(r"\s+","",line)#空白の削除
+                #line = re.sub(r"\s+","",line)#空白の削除
                 line = line.replace("\n","")#改行の削除
                 name,file = line.split(":")
+                if name in ["HEIGHT","WIDTH"]:
+                    if name is "HEIGHT":
+                        HEIGHT = int(line)
+                    if name is "WIDTH":
+                        WIDTH = int(line)
+                    if (HEIGHT != 0) and (WIDTH != 0):
+                        setImageSize(WIDTH,HEIGHT)
+                    continue
                 imageTables[name] = file
 
 def loadIcons():
     for name,path in imageTables.items():
-        img = cv2.imread(os.getcwd()+r"/images/"+path)
-        #npImageTables[name] = img
+        img = cv2.imread(os.getcwd()+r"/templates/images/"+path)
+        #npImageTables[name] = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         npImageTables[name] = cv2.cvtColor(cv2.resize(img,(WIDTH,HEIGHT)),cv2.COLOR_BGR2RGB)
 
-
+def setImageSize(width,height):
+    imgSoup["width"] = width
+    imgSoup["height"] = height
+    with open("./templates/index.html",mode="w") as f:
+        f.write(str(soup))
 def main():
     readTable()
-    loadIcons()
+    setImageSize(WIDTH,HEIGHT)
+    #loadIcons()
     print(imageTables)
     ws.connect()
     #init
     initText(TEXT_SCORE)
     print("接続完了")
     with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as s:
-        with pyvirtualcam.Camera(width=WIDTH, height=HEIGHT, fps=20) as cam:
-            s.bind(("127.0.0.1",12345))
-            frame = np.zeros((cam.height, cam.width, 3), np.uint8) # RGBA
-            frame[:] = cam.frames_sent % 255 # grayscale animation
-            if "TEMP" in imageTables.keys():
-                frame[:] = npImageTables["TEMP"]
-            cam.send(frame)
-            while 1:
-                message, _ = s.recvfrom(256)
-                message = message.decode(encoding='utf-8')
-                print(message)
-                recvData(message,cam)
+        s.bind(("127.0.0.1",12345))
+        while 1:
+            message, _ = s.recvfrom(256)
+            message = message.decode(encoding='utf-8')
+            print(message)
+            recvData(message)
     ws.disconnect()
 
 main()

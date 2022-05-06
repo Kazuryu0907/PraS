@@ -100,6 +100,7 @@ void PraS::createNameTable()
 		//DEBUG
 		//PlayerNames[i] = std::to_string(i);
 		//PlayerToDisplayName[name] = std::to_string(i);
+		cvarManager->log(pl.GetOldName().ToString());
 		PlayerToDisplayName[name] = pl.GetOldName().ToString();
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		PlayerMap[name] = ppl;
@@ -117,10 +118,11 @@ void PraS::updateScore(std::string eventName) {
 	if (currentFocusActorScore != preFocusActorScore) {
 		std::string msg = currentFocusActorName + ":" + std::to_string(currentFocusActorScore);
 		sendSocket(PlayerToDisplayName[currentFocusActorName]+":"+std::to_string(currentFocusActorScore));
+		//sendSocket(PlayerNames[currentFocusActorName] + ":" + std::to_string(currentFocusActorScore));
 		//sendSocket(std::to_string(currentFocusActorScore));
 	}
 	preFocusActorScore = currentFocusActorScore;
-	//cvarManager->log(currentFocusActorName+std::to_string(currentFocusActorScore));
+	//cvarManager->log(currentFocusActorName);
 }
 void PraS::updatePlayerCam(std::string eventName) {
 	ServerWrapper server = gameWrapper->GetOnlineGame();

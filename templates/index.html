@@ -1,19 +1,10 @@
 <!DOCTYPE html>
+
 <html>
 <head>
 <title>PraS</title>
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
-    <img src="./images/cry.png" id="icon">
-    <script type="text/javascript" charset="utf-8">
-        let socket = io();
-        socket.on("icon_update",(msg) => {
-            let img = document.getElementById("icon");
-            const path = "./images/" + msg.icon_src;
-            img.src = path;
-        })
-        document.icon.src = data;
-    </script>
+<img height="256" id="icon" src="images/mio.webp" width="256"/>
 </body>
 </html>
