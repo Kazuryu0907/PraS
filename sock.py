@@ -1,9 +1,6 @@
 import socket
 from obswebsocket import obsws, requests
 from bs4 import BeautifulSoup 
-import pyvirtualcam
-import numpy as np
-import cv2
 import os
 functions = ["getChatlog","getExtents","getColor","getText","getGradient_opacity","getBk_color","getFile","getFont","getGradient","getSource","getRead_from_file",
     "getValign","getVertical","getExtents_cy","getExtents_cx","getBk_opacity","getGradient_dir","getChatlog_lines","getGradient_color","getOutline_size","getOutline_color","getOutline","getAlign","getOutline_opacity"]
@@ -69,10 +66,10 @@ def recvData(data):
             name = data[0]
             score = data[1]
             file = imageTables[name]
+            changeText(TEXT_SCORE,score)
             if lastImg != file:
                 print(file)
                 changeImage(file)
-            changeText(TEXT_SCORE,score)
             lastImg = file
         except Exception as e:
             print(e)
@@ -81,9 +78,9 @@ def changeImage(file):
     imgSoup["src"] = path
     with open("./templates/index.html",mode="w") as f:
         f.write(str(soup))
-    #ws.call(requests.RefreshBrowserSource("pras_icons"))
-    ws.call(requests.SetSceneItemRender("pras_icons",render=False))
-    ws.call(requests.SetSceneItemRender("pras_icons",render=True))
+    ws.call(requests.RefreshBrowserSource("pras_icons"))
+    #ws.call(requests.SetSceneItemRender("pras_icons",render=False))
+    #ws.call(requests.SetSceneItemRender("pras_icons",render=True))
 def initText(source):
     txt = ws.call(requests.GetTextGDIPlusProperties(source))
     for func in functions:

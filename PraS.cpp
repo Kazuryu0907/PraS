@@ -6,6 +6,7 @@
 #include <thread>
 #include <regex>
 #include <vector>
+#include <ctime>
 
 BAKKESMOD_PLUGIN(PraS, "PraS(Private match artistic Stream)", plugin_version, PLUGINTYPE_SPECTATOR)
 
@@ -17,13 +18,15 @@ void PraS::onLoad()
 	cvarManager->log("init Sock");
 	initSocket();
 	sendSocket("init");
-	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnGameTimeUpdated", std::bind(&PraS::updateScore, this, std::placeholders::_1));
+	//gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.OnGameTimeUpdated", std::bind(&PraS::updateScore, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function TAGame.ReplayDirector_TA.Tick", std::bind(&PraS::updateScore, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.Camera_Replay_TA.SetFocusActor", std::bind(&PraS::updateAutoCam, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.Camera_TA.OnViewTargetChanged", std::bind(&PraS::updatePlayerCam, this, std::placeholders::_1));
 	//Function GameEvent_Soccar_TA.Active.StartRound
 	gameWrapper->HookEvent("Function GameEvent_Soccar_TA.Active.BeginState", std::bind(&PraS::startGame, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventPlayerScored", std::bind(&PraS::scored, this, std::placeholders::_1));
-//Function TAGame.GameEvent_Soccar_TA.EventPlayerScored
+
+	//Function TAGame.GameEvent_Soccar_TA.EventPlayerScored
 	//Function GameFramework.GameThirdPersonCamera.GetFocusActor
 	//
 	//Function TAGame.Camera_Replay_TA.UpdateCameraState already
@@ -98,10 +101,8 @@ void PraS::createNameTable()
 		else name = "Player_" + name;
 		PlayerNames[i] = pl.GetOldName().ToString();
 		//DEBUG
-		//PlayerNames[i] = std::to_string(i);
-		//PlayerToDisplayName[name] = std::to_string(i);
-		cvarManager->log(pl.GetOldName().ToString());
-		PlayerToDisplayName[name] = pl.GetOldName().ToString();
+		PlayerToDisplayName[name] = std::to_string(i);
+	//	PlayerToDisplayName[name] = pl.GetOldName().ToString();
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		PlayerMap[name] = ppl;
 	}
@@ -109,8 +110,8 @@ void PraS::createNameTable()
 
 void PraS::updateScore(std::string eventName) {
 	if (PlayerMap.count(currentFocusActorName) == 0) {
-		cvarManager->log(currentFocusActorName);
-		cvarManager->log("Name is 0");
+		//cvarManager->log(currentFocusActorName);
+		//cvarManager->log("Name is 0");
 		return;
 	}
 	auto pl = PlayerMap[currentFocusActorName];
@@ -118,13 +119,12 @@ void PraS::updateScore(std::string eventName) {
 	if (currentFocusActorScore != preFocusActorScore) {
 		std::string msg = currentFocusActorName + ":" + std::to_string(currentFocusActorScore);
 		sendSocket(PlayerToDisplayName[currentFocusActorName]+":"+std::to_string(currentFocusActorScore));
-		//sendSocket(PlayerNames[currentFocusActorName] + ":" + std::to_string(currentFocusActorScore));
-		//sendSocket(std::to_string(currentFocusActorScore));
 	}
 	preFocusActorScore = currentFocusActorScore;
 	//cvarManager->log(currentFocusActorName);
 }
 void PraS::updatePlayerCam(std::string eventName) {
+	//cvarManager->log("fire");
 	ServerWrapper server = gameWrapper->GetOnlineGame();
 	CameraWrapper camera = gameWrapper->GetCamera();
 	auto actorName = camera.GetFocusActor();

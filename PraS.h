@@ -5,6 +5,7 @@
 #include "bakkesmod/plugin/PluginSettingsWindow.h"
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <unordered_map>
 
 #include "version.h"
 constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
@@ -58,14 +59,15 @@ private:
 	std::string ADDR = "127.0.0.1";
 	SOCKET sock;
 	struct sockaddr_in server;
-	std::map<std::string,std::shared_ptr<PriWrapper>> PlayerMap;
+	std::unordered_map<std::string,std::shared_ptr<PriWrapper>> PlayerMap;
 	std::string PlayerNames[10];
-	std::map<std::string, std::string> PlayerToDisplayName;
+	std::unordered_map<std::string, std::string> PlayerToDisplayName;
 	bool onAutoCam = false;
 	bool onPlayerView = false;
 	int currentFocusActorScore = 0;
 	std::string preAutoCamActorName = "";
 	std::string currentFocusActorName = "";
+	std::string preFocusActorName = "";
 	int preFocusActorScore = 0;
 	int dst_socket;
 	std::string preMsg = "";
