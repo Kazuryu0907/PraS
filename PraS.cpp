@@ -38,6 +38,17 @@ void PraS::onLoad()
 	
 }
 
+void PraS::onUnload()
+{
+	endSocket();
+	gameWrapper->UnhookEvent("Function TAGame.ReplayDirector_TA.Tick");
+	gameWrapper->UnhookEvent("Function TAGame.Camera_Replay_TA.SetFocusActor");
+	gameWrapper->UnhookEvent("Function TAGame.Camera_TA.OnViewTargetChanged");
+	//Function GameEvent_Soccar_TA.Active.StartRound
+	gameWrapper->UnhookEvent("Function GameEvent_Soccar_TA.Active.BeginState");
+	gameWrapper->UnhookEvent("Function TAGame.GameEvent_Soccar_TA.EventPlayerScored");
+}
+
 void PraS::initSocket() {
 	WSADATA wsaData;
 	struct sockaddr_in server;
@@ -153,7 +164,3 @@ void PraS::updateAutoCam(std::string eventName){
 }
 
 
-void PraS::onUnload()
-{
-	endSocket();
-}
