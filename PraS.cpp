@@ -8,6 +8,7 @@
 #include <vector>
 #include <ctime>
 
+#define TOS(s) std::to_string(s)
 BAKKESMOD_PLUGIN(PraS, "PraS(Private match artistic Stream)", plugin_version, PLUGINTYPE_SPECTATOR)
 
 std::shared_ptr<CVarManagerWrapper> _globalCvarManager;
@@ -25,17 +26,6 @@ void PraS::onLoad()
 	//Function GameEvent_Soccar_TA.Active.StartRound
 	gameWrapper->HookEvent("Function GameEvent_Soccar_TA.Active.BeginState", std::bind(&PraS::startGame, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventPlayerScored", std::bind(&PraS::scored, this, std::placeholders::_1));
-
-	//Function TAGame.GameEvent_Soccar_TA.EventPlayerScored
-	//Function GameFramework.GameThirdPersonCamera.GetFocusActor
-	//
-	//Function TAGame.Camera_Replay_TA.UpdateCameraState already
-
-	//Function TAGame.CameraState_DirectorPlayerView_TA.FindFocusCar
-	//Function TAGame.GFxData_ReplayViewer_TA.SetFocusActorString
-	//Function TAGame.CameraState_Director_TA.UpdateSelector
-	//Function TAGame.ReplayDirector_TA.EventScoreDataChanged
-	
 }
 
 void PraS::onUnload()
@@ -74,7 +64,6 @@ void PraS::endSocket() {
 	WSACleanup();
 }
 void PraS::scored(std::string eventName) {
-	std::string msg = "scored";
 	sendSocket("scored");
 }
 void PraS::startGame(std::string eventName) {
@@ -85,18 +74,6 @@ void PraS::startGame(std::string eventName) {
 	currentFocusActorName = actorName;
 }
 
-std::string PraS::split(const std::string& s) {
-	std::vector<std::string> elems;
-	std::stringstream ss(s);
-	std::string item;
-	while (std::getline(ss, item, '|')) {
-		if (!item.empty()) {
-			elems.push_back(item);
-		}
-	}
-	if (elems.size() != 3)return "";
-	return elems[1];
-}
 void PraS::createNameTable()
 {
 	ServerWrapper sw = gameWrapper->GetOnlineGame();
@@ -120,9 +97,19 @@ void PraS::createNameTable()
 }
 
 void PraS::updateScore(std::string eventName) {
+	auto gw = gameWrapper->GetOnlineGame();
+	if (gw.IsNull())return;
+	auto cars = gw.GetCars();
+	for (int i = 0; i < cars.Count(); i++) {
+		auto car = cars.Get(i);
+		if (car.IsNull())continue;
+		auto boostCom = car.GetBoostComponent();
+		if (boostCom.IsNull())continue;
+		int boost = int(boostCom.GetCurrentBoostAmount()*100);
+		if(boost != Boosts[i])sendSocket("b"+TOS(i) + ":" + TOS(boost));
+		Boosts[i] = boost;
+	}
 	if (PlayerMap.count(currentFocusActorName) == 0) {
-		//cvarManager->log(currentFocusActorName);
-		//cvarManager->log("Name is 0");
 		return;
 	}
 	auto pl = PlayerMap[currentFocusActorName];
