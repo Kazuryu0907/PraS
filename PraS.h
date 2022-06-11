@@ -24,6 +24,7 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 	void updatePlayerCam(std::string);
 	void updateAutoCam(std::string);
 	void updateScore(std::string);
+	void onMemberChanged(std::string);
 	void startGame(std::string);
 	void scored(std::string);
 	void initSocket();
@@ -58,10 +59,16 @@ private:
 	int PORT = 12345;
 	std::string ADDR = "127.0.0.1";
 	SOCKET sock;
+	struct teamStruct {
+		std::string name;
+		bool team;
+	};
 	struct sockaddr_in server;
 	std::unordered_map<std::string,std::shared_ptr<PriWrapper>> PlayerMap;
 	std::unordered_map<std::string, std::shared_ptr<CarWrapper>> CarMap;
-	int Boosts[10];
+	std::vector<std::string> CarMapKeys;
+	std::vector<teamStruct> TeamVec;
+	std::unordered_map<std::string,int> Boosts;
 	std::string PlayerNames[10];
 	std::unordered_map<std::string, std::string> PlayerToDisplayName;
 	bool onAutoCam = false;
