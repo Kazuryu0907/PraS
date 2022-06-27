@@ -20,7 +20,7 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 	virtual void onLoad();
 	virtual void onUnload();
 
-	void createNameTable();
+	void createNameTable(bool run=false);
 	void updatePlayerCam(std::string);
 	void updateAutoCam(std::string);
 	void updateScore(std::string);
@@ -60,7 +60,13 @@ private:
 	SOCKET sock;
 	struct sockaddr_in server;
 	std::unordered_map<std::string,std::shared_ptr<PriWrapper>> PlayerMap;
-	std::unordered_map<std::string, std::shared_ptr<CarWrapper>> CarMap;
+	
+	struct playerData {
+		std::string name;
+		unsigned char team;//isblue
+	};
+	std::vector<playerData> OwnerMap;
+	std::unordered_map<std::string,int> OwnerIndexMap;
 	int Boosts[10];
 	std::string PlayerNames[10];
 	std::unordered_map<std::string, std::string> PlayerToDisplayName;
