@@ -21,8 +21,6 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 	virtual void onUnload();
 
 	void createNameTable(bool run=false);
-	void updatePlayerCam(std::string);
-	void updateAutoCam(std::string);
 	void updateScore(std::string);
 	void startGame(std::string);
 	void scored(std::string);
@@ -59,8 +57,11 @@ private:
 	std::string ADDR = "127.0.0.1";
 	SOCKET sock;
 	struct sockaddr_in server;
-	std::unordered_map<std::string,std::shared_ptr<PriWrapper>> PlayerMap;
+	std::unordered_map<std::string,std::shared_ptr<PriWrapper>> DisplayNameMap;
+	std::unordered_map<std::string, std::string> PlayerIdMap;
 	
+	int preScore = 0;
+
 	struct playerData {
 		std::string name;
 		unsigned char team;//isblue
@@ -73,6 +74,7 @@ private:
 	bool onAutoCam = false;
 	bool onPlayerView = false;
 	int currentFocusActorScore = 0;
+	std::string preActorName = "";
 	std::string preAutoCamActorName = "";
 	std::string currentFocusActorName = "";
 	std::string preFocusActorName = "";
