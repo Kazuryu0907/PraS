@@ -23,6 +23,7 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 	void createNameTable(bool run=false);
 	void updateScore(std::string);
 	void startGame(std::string);
+	void endGame(std::string);
 	void scored(std::string);
 	void initSocket();
 	void endSocket();

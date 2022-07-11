@@ -23,7 +23,9 @@ void PraS::onLoad()
 
 
 	gameWrapper->HookEvent("Function GameEvent_Soccar_TA.Active.BeginState", std::bind(&PraS::startGame, this, std::placeholders::_1));
-	//gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&PraS::startGame, this, std::placeholders::_1));
+	//gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", [this](std::string eventName) {cvarManager->log("counting"); });
+	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&PraS::endGame, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&PraS::startGame, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventPlayerScored", std::bind(&PraS::scored, this, std::placeholders::_1));
 }
 
@@ -68,6 +70,9 @@ void PraS::scored(std::string eventName) {
 void PraS::startGame(std::string eventName) {
 	createNameTable();
 }
+void PraS::endGame(std::string eventName) {
+	sendSocket("end");
+}
 
 void PraS::createNameTable(bool isForcedRun)
 {
@@ -87,13 +92,19 @@ void PraS::createNameTable(bool isForcedRun)
 		auto pl = pls.Get(i);
 		if (pl.IsNull())continue;
 		std::string displayName = pl.GetOldName().ToString();
+		
 		//本来はuniqueID
 		std::string playerId = TOS(i);
 
 		//観戦時のプレイヤー名に合わせるため
 		if (pl.GetbBot())displayName = "Player_Bot_" + pl.GetOldName().ToString();
-		else displayName = "Player_" + displayName;
-
+		else {
+			displayName = "Player_" + displayName;
+			UniqueIDWrapper uidw = pl.GetUniqueIdWrapper();
+			displayName = uidw.GetIdString();
+			cvarManager->log(pl.GetOldName().ToString());
+		}
+		
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		DisplayNameMap[displayName] = ppl;
 		PlayerIdMap[displayName] = playerId;
@@ -106,6 +117,7 @@ void PraS::updateScore(std::string eventName) {
 	if (gw.IsNull())return;
 	CameraWrapper camera = gameWrapper->GetCamera();
 	auto actorName = camera.GetFocusActor();
+	
 	if (preActorName != actorName) {
 		if(PlayerIdMap.count(actorName) == 0)return;
 		sendSocket("p" + actorName + ":" + PlayerIdMap[actorName]);
