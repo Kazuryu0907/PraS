@@ -19,11 +19,9 @@ void PraS::onLoad()
 	initSocket();
 	sendSocket("init");
 	createNameTable(true);
-	gameWrapper->HookEvent("Function TAGame.ReplayDirector_TA.Tick", std::bind(&PraS::updateScore, this, std::placeholders::_1));
-	gameWrapper->HookEvent("Function TAGame.Camera_Replay_TA.SetFocusActor", std::bind(&PraS::updateAutoCam, this, std::placeholders::_1));
-	gameWrapper->HookEvent("Function TAGame.Camera_TA.OnViewTargetChanged", std::bind(&PraS::updatePlayerCam, this, std::placeholders::_1));
+	gameWrapper->HookEvent("Function TAGame.ReplayDirector_TA.Tick", std::bind(&PraS::tick, this, std::placeholders::_1));
 
-
+	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventMatchEnded", std::bind(&PraS::endGame, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function GameEvent_Soccar_TA.Active.BeginState", std::bind(&PraS::startGame, this, std::placeholders::_1));
 	//gameWrapper->HookEvent("Function GameEvent_TA.Countdown.BeginState", std::bind(&PraS::startGame, this, std::placeholders::_1));
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventPlayerScored", std::bind(&PraS::scored, this, std::placeholders::_1));
@@ -75,6 +73,10 @@ void PraS::startGame(std::string eventName) {
 	auto actorName = camera.GetFocusActor();
 	currentFocusActorName = actorName;
 }
+void PraS::endGame(std::string eventName) {
+	sendSocket("end");
+}
+
 
 void PraS::createNameTable(bool isForcedRun)
 {
@@ -98,7 +100,7 @@ void PraS::createNameTable(bool isForcedRun)
 		PlayerNames[i] = pl.GetOldName().ToString();
 		//DEBUG
 		PlayerToDisplayName[name] = std::to_string(i);
-	//	PlayerToDisplayName[name] = pl.GetOldName().ToString();
+		//PlayerToDisplayName[name] = pl.GetPlayerName().ToString();
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		PlayerMap[name] = ppl;
 		if (pl.GetTeamNum() != 255) {//not ŠÏíŽÒ
@@ -117,9 +119,17 @@ void PraS::createNameTable(bool isForcedRun)
 	}
 }
 
-void PraS::updateScore(std::string eventName) {
+void PraS::tick(std::string eventName) {
 	auto gw = gameWrapper->GetOnlineGame();
 	if (gw.IsNull())return;
+	CameraWrapper camera = gameWrapper->GetCamera();
+	auto actorName = camera.GetFocusActor();
+	if (actorName != preActorName) {
+		//send FOCUS
+		//sendSocket(actorName);
+		preActorName = actorName;
+	}
+
 	auto cars = gw.GetCars();
 	for (int i = 0; i < cars.Count(); i++) {
 		auto car = cars.Get(i);
@@ -128,8 +138,8 @@ void PraS::updateScore(std::string eventName) {
 		if (car.IsNull())continue;
 		auto boostCom = car.GetBoostComponent();
 		if (boostCom.IsNull())continue;
-		int boost = int(boostCom.GetCurrentBoostAmount()*100);
-		if(boost != Boosts[i])sendSocket("b"+ TOS(OwnerIndexMap[name]) + ":" + TOS(boost));
+		int boost = int(boostCom.GetCurrentBoostAmount() * 100);
+		if (boost != Boosts[i])sendSocket("b" + TOS(OwnerIndexMap[name]) + ":" + TOS(boost));
 		Boosts[i] = boost;
 	}
 	if (PlayerMap.count(currentFocusActorName) == 0) {
@@ -139,38 +149,8 @@ void PraS::updateScore(std::string eventName) {
 	currentFocusActorScore = pl->GetMatchScore();
 	if (currentFocusActorScore != preFocusActorScore) {
 		std::string msg = currentFocusActorName + ":" + std::to_string(currentFocusActorScore);
-		sendSocket(PlayerToDisplayName[currentFocusActorName]+":"+std::to_string(currentFocusActorScore));
+		sendSocket(PlayerToDisplayName[currentFocusActorName] + ":" + std::to_string(currentFocusActorScore));
 	}
 	preFocusActorScore = currentFocusActorScore;
 	//cvarManager->log(currentFocusActorName);
 }
-void PraS::updatePlayerCam(std::string eventName) {
-	//cvarManager->log("fire");
-	ServerWrapper server = gameWrapper->GetOnlineGame();
-	CameraWrapper camera = gameWrapper->GetCamera();
-	auto actorName = camera.GetFocusActor();
-	auto cameraState = camera.GetCameraState();
-	if (cameraState.find("Car") != std::string::npos) {
-		currentFocusActorName = actorName;
-		//cvarManager->log(cameraState +actorName);
-	}
-}
-
-void PraS::updateAutoCam(std::string eventName){
-	ServerWrapper server = gameWrapper->GetOnlineGame();
-	CameraWrapper camera = gameWrapper->GetCamera();
-	auto actorName = camera.GetFocusActor();
-	auto cameraState = camera.GetCameraState();
-	if (cameraState.find("Car") == std::string::npos) {
-		//Found
-		if (actorName == preAutoCamActorName) {
-			//cvarManager->log("double");
-			//cvarManager->log("new:"+ camera.GetFocusActor());
-		}
-		currentFocusActorName = actorName;
-		//cvarManager->log(cameraState + actorName);
-	}
-	preAutoCamActorName = actorName;
-}
-
-

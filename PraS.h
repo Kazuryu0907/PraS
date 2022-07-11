@@ -21,10 +21,9 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 	virtual void onUnload();
 
 	void createNameTable(bool run=false);
-	void updatePlayerCam(std::string);
-	void updateAutoCam(std::string);
-	void updateScore(std::string);
+	void tick(std::string);
 	void startGame(std::string);
+	void endGame(std::string);
 	void scored(std::string);
 	void initSocket();
 	void endSocket();
@@ -70,6 +69,7 @@ private:
 	int Boosts[10];
 	std::string PlayerNames[10];
 	std::unordered_map<std::string, std::string> PlayerToDisplayName;
+	std::string preActorName = "";
 	bool onAutoCam = false;
 	bool onPlayerView = false;
 	int currentFocusActorScore = 0;
