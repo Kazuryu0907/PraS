@@ -91,19 +91,16 @@ void PraS::createNameTable(bool isForcedRun)
 	for (int i = 0; i < pls.Count(); i++) {
 		auto pl = pls.Get(i);
 		if (pl.IsNull())continue;
-		std::string displayName = pl.GetOldName().ToString();
+
+
+		std::string displayName = "";
 		
 		//本来はuniqueID
 		std::string playerId = TOS(i);
 
 		//観戦時のプレイヤー名に合わせるため
 		if (pl.GetbBot())displayName = "Player_Bot_" + pl.GetOldName().ToString();
-		else {
-			displayName = "Player_" + displayName;
-			UniqueIDWrapper uidw = pl.GetUniqueIdWrapper();
-			displayName = uidw.GetIdString();
-			cvarManager->log(pl.GetOldName().ToString());
-		}
+		else			 displayName = "Player_" + pl.GetPlayerName().ToString();
 		
 		auto ppl = std::make_shared<PriWrapper>(pl);
 		DisplayNameMap[displayName] = ppl;
@@ -124,10 +121,8 @@ void PraS::updateScore(std::string eventName) {
 		preActorName = actorName;
 	}
 
-	if (DisplayNameMap.count(actorName) == 0) {
-		cvarManager->log("break DNM");
-		return;
-	}
+	if (DisplayNameMap.count(actorName) == 0)return;
+
 	std::shared_ptr<PriWrapper> pl = DisplayNameMap[actorName];
 	int score = pl->GetMatchScore();
 	if(preScore != score){
