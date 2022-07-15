@@ -61,28 +61,24 @@ private:
 	std::unordered_map<std::string,std::shared_ptr<PriWrapper>> DisplayNameMap;
 	std::unordered_map<std::string, std::string> PlayerIdMap;
 	
-	int preScore = 0;
+	
 
 	struct playerData {
 		std::string name;
 		unsigned char team;//isblue
 	};
+
 	std::vector<playerData> OwnerMap;
 	std::unordered_map<std::string,int> OwnerIndexMap;
 	int Boosts[10];
-	std::string PlayerNames[10];
+
 	std::unordered_map<std::string, std::string> PlayerToDisplayName;
+
 	bool onAutoCam = false;
 	bool onPlayerView = false;
-	int currentFocusActorScore = 0;
 	std::string preActorName = "";
-	std::string preAutoCamActorName = "";
-	std::string currentFocusActorName = "";
-	std::string preFocusActorName = "";
-	int preFocusActorScore = 0;
+	int preScore = 0;
 	int dst_socket;
-	std::string preMsg = "";
-	std::string msg = "";
 };
 
 

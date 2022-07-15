@@ -97,6 +97,7 @@ void PraS::createNameTable(bool isForcedRun)
 		
 		//本来はuniqueID
 		std::string playerId = TOS(i);
+		playerId = pl.GetPlayerName().ToString();
 
 		//観戦時のプレイヤー名に合わせるため
 		if (pl.GetbBot())displayName = "Player_Bot_" + pl.GetOldName().ToString();
