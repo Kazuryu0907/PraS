@@ -86,8 +86,8 @@ void PraS::createNameTable(bool isForcedRun)
 	if (!isForcedRun && sw.GetTotalScore() != 0)return;
 	cvarManager->log("PLS:"+TOS(pls.Count()));
 
+	PriMap.clear();
 	DisplayNameMap.clear();
-	PlayerIdMap.clear();
 	for (int i = 0; i < pls.Count(); i++) {
 		auto pl = pls.Get(i);
 		if (pl.IsNull())continue;
@@ -97,15 +97,15 @@ void PraS::createNameTable(bool isForcedRun)
 		
 		//本来はuniqueID
 		std::string playerId = TOS(i);
-		playerId = pl.GetPlayerName().ToString();
+		playerId = "Player_" + pl.GetUniqueIdWrapper().GetIdString();
 
 		//観戦時のプレイヤー名に合わせるため
 		if (pl.GetbBot())displayName = "Player_Bot_" + pl.GetOldName().ToString();
-		else			 displayName = "Player_" + pl.GetPlayerName().ToString();
-		
+		else			 displayName = pl.GetPlayerName().ToString();
+
 		auto ppl = std::make_shared<PriWrapper>(pl);
-		DisplayNameMap[displayName] = ppl;
-		PlayerIdMap[displayName] = playerId;
+		PriMap[playerId] = ppl;
+		DisplayNameMap[playerId] = displayName;
 		
 	}
 }
@@ -117,14 +117,15 @@ void PraS::updateScore(std::string eventName) {
 	auto actorName = camera.GetFocusActor();
 	
 	if (preActorName != actorName) {
-		if(PlayerIdMap.count(actorName) == 0)return;
-		sendSocket("p" + actorName + ":" + PlayerIdMap[actorName]);
+		if(DisplayNameMap.count(actorName) == 0)return;
+		//											画像名
+		sendSocket("p" + DisplayNameMap[actorName] + ":" + DisplayNameMap[actorName]);
 		preActorName = actorName;
 	}
 
-	if (DisplayNameMap.count(actorName) == 0)return;
+	if (PriMap.count(actorName) == 0)return;
 
-	std::shared_ptr<PriWrapper> pl = DisplayNameMap[actorName];
+	std::shared_ptr<PriWrapper> pl = PriMap[actorName];
 	int score = pl->GetMatchScore();
 	if(preScore != score){
 		sendSocket("s" + TOS(score));

@@ -58,8 +58,8 @@ private:
 	std::string ADDR = "127.0.0.1";
 	SOCKET sock;
 	struct sockaddr_in server;
-	std::unordered_map<std::string,std::shared_ptr<PriWrapper>> DisplayNameMap;
-	std::unordered_map<std::string, std::string> PlayerIdMap;
+	std::unordered_map<std::string,std::shared_ptr<PriWrapper>> PriMap;
+	std::unordered_map<std::string, std::string> DisplayNameMap;
 	
 	
 
