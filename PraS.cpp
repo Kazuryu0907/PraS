@@ -81,6 +81,7 @@ void PraS::endGame(std::string eventName) {
 	for (int i = 0; i < pls.Count(); i++) {
 		auto pl = pls.Get(i);
 		if (pl.IsNull())continue;
+		if (pl.GetTeamNum() == 255)continue;
 		resultData res = {
 			pl.GetPlayerName().ToString(),
 			pl.GetTeamNum(),
@@ -94,8 +95,12 @@ void PraS::endGame(std::string eventName) {
 		};
 		MatchResults.push_back(res);
 	}
+	//orange H->L -> blue H->L
 	std::sort(MatchResults.begin(), MatchResults.end(), [](const resultData& a, const resultData& b) {return(a.score > b.score); });
 	std::sort(MatchResults.begin(), MatchResults.end(), [](const resultData& a, const resultData& b) {return(a.team > b.team); });
+	for (const resultData r : MatchResults) {
+		cvarManager->log(r.name + ":" + TOS(r.score));
+	}
 }
 
 
