@@ -60,10 +60,40 @@ private:
 	SOCKET sock;
 	struct sockaddr_in server;
 	std::unordered_map<std::string,std::shared_ptr<PriWrapper>> PlayerMap;
+<<<<<<< Updated upstream
 	std::string PlayerNames[10];
 	std::unordered_map<std::string, std::string> PlayerToDisplayName;
 	bool onAutoCam = false;
 	bool onPlayerView = false;
+=======
+	
+	struct playerData {
+		std::string name;
+		unsigned char team;//isblue
+	};
+	struct carData {
+		std::shared_ptr<CarWrapper> car;
+		unsigned char isBot;
+	};
+	struct resultData{
+		std::string name;
+		unsigned char team;
+		int score;
+		int goals;
+		int assists;
+		int saves;
+		int shots;
+		int demos;
+		int touches;
+	};
+	std::vector<playerData> OwnerMap;
+	std::unordered_map<std::string,int> OwnerIndexMap;
+	std::vector<resultData> MatchResults;
+	int Boosts[10];
+	std::unordered_map<std::string, std::string> DisplayName2Id;
+	std::unordered_map<std::string, std::string> UniqueID2DisplayName;
+	std::string preActorName = "";
+>>>>>>> Stashed changes
 	int currentFocusActorScore = 0;
 	std::string preAutoCamActorName = "";
 	std::string currentFocusActorName = "";
