@@ -120,6 +120,7 @@ void PraS::createNameTable(bool isForcedRun)
 	OwnerMap.clear();
 	DisplayName2Id.clear();
 	OwnerIndexMap.clear();
+	Id2DisplayName.clear();
 	//----------------//
 	for (int i = 0; i < pls.Count(); i++) {
 		auto pl = pls.Get(i);
@@ -127,20 +128,26 @@ void PraS::createNameTable(bool isForcedRun)
 		
 		std::string displayName = "";
 		//本来はuniqueID
-		std::string playerId = TOS(i);
-
+		//std::string playerId = TOS(i);
+		std::string playerId = "Player_" + pl.GetUniqueIdWrapper().GetIdString();
+		cvarManager->log(playerId);
 
 		//観戦時のプレイヤー名に合わせるため
 		if (pl.GetbBot())displayName = "Player_Bot_" + pl.GetOldName().ToString();
-		else			 displayName = "Player_" + pl.GetPlayerName().ToString();
+		else			 displayName = pl.GetPlayerName().ToString();
 
 		auto ppl = std::make_shared<PriWrapper>(pl);
 
-		PlayerMap[displayName] = ppl;
+		if (pl.GetbBot())PlayerMap[displayName] = ppl;
+		else            PlayerMap[playerId] = ppl;
+		
 		DisplayName2Id[displayName] = playerId;
-
+		Id2DisplayName[playerId] = displayName;
+		cvarManager->log(":="+playerId);
 		if (pl.GetTeamNum() != 255) {//not 観戦者
 			playerData p = { displayName, pl.GetTeamNum()};//isblue
+			if(!pl.GetbBot())p = { playerId,pl.GetTeamNum()};//not Bot
+
 			OwnerMap.push_back(p);
 		}
 		
@@ -163,7 +170,8 @@ void PraS::tick(std::string eventName) {
 	if (actorName != preActorName) {
 		//send FOCUS
 		if (OwnerIndexMap.count(actorName) != 0) {
-			sendSocket("p" + actorName + ":" + TOS(OwnerIndexMap[actorName]));
+			//cvarManager->log(Id2DisplayName[actorName]);
+			sendSocket("p" + Id2DisplayName[actorName] + ":" + TOS(OwnerIndexMap[actorName]));
 			preActorName = actorName;
 		}
 	}
@@ -179,7 +187,7 @@ void PraS::tick(std::string eventName) {
 			auto boostCom = car.GetBoostComponent();
 			if (boostCom.IsNull())continue;
 			int boost = int(boostCom.GetCurrentBoostAmount() * 100);
-			if (boost != Boosts[i])sendSocket("b" + TOS(boost) + ":" + TOS(OwnerIndexMap[name]));
+			//if (boost != Boosts[i])sendSocket("b" + TOS(boost) + ":" + TOS(OwnerIndexMap[name]));
 			Boosts[i] = boost;
 		}
 	}
@@ -190,7 +198,7 @@ void PraS::tick(std::string eventName) {
 	currentFocusActorScore = pl->GetMatchScore();
 	if (currentFocusActorScore != preFocusActorScore) {
 		std::string msg = actorName + ":" + TOS(currentFocusActorScore);
-		//sendSocket(OwnerIndexMap[actorName] + ":" + TOS(currentFocusActorScore));
+		sendSocket("s" + TOS(OwnerIndexMap[actorName]) + ":" + TOS(currentFocusActorScore));
 	}
 	preFocusActorScore = currentFocusActorScore;
 }

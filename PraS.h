@@ -6,6 +6,9 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <unordered_map>
+//#include "websocketpp"
+
+
 
 #include "version.h"
 constexpr auto plugin_version = stringify(VERSION_MAJOR) "." stringify(VERSION_MINOR) "." stringify(VERSION_PATCH) "." stringify(VERSION_BUILD);
@@ -84,6 +87,7 @@ private:
 	std::vector<resultData> MatchResults;
 	int Boosts[10];
 	std::unordered_map<std::string, std::string> DisplayName2Id;
+	std::unordered_map<std::string, std::string> Id2DisplayName;
 	std::string preActorName = "";
 	int currentFocusActorScore = 0;
 	std::string preFocusActorName = "";
