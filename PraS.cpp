@@ -74,33 +74,33 @@ void PraS::endGame(std::string eventName) {
 	isBoostWatching = false;
 	sendSocket("end");
 	
-	ServerWrapper sw = gameWrapper->GetOnlineGame();
-	if (sw.IsNull())return;
-	MatchResults.clear();
-	ArrayWrapper<PriWrapper> pls = sw.GetPRIs();
-	for (int i = 0; i < pls.Count(); i++) {
-		auto pl = pls.Get(i);
-		if (pl.IsNull())continue;
-		if (pl.GetTeamNum() == 255)continue;
-		resultData res = {
-			pl.GetPlayerName().ToString(),
-			pl.GetTeamNum(),
-			pl.GetMatchScore(),
-			pl.GetMatchGoals(),
-			pl.GetMatchAssists(),
-			pl.GetMatchSaves(),
-			pl.GetMatchShots(),
-			pl.GetMatchDemolishes(),
-			pl.GetBallTouches(),
-		};
-		MatchResults.push_back(res);
-	}
-	//orange H->L -> blue H->L
-	std::sort(MatchResults.begin(), MatchResults.end(), [](const resultData& a, const resultData& b) {return(a.score > b.score); });
-	std::sort(MatchResults.begin(), MatchResults.end(), [](const resultData& a, const resultData& b) {return(a.team > b.team); });
-	for (const resultData r : MatchResults) {
-		cvarManager->log(r.name + ":" + TOS(r.score));
-	}
+	//ServerWrapper sw = gameWrapper->GetOnlineGame();
+	//if (sw.IsNull())return;
+	//MatchResults.clear();
+	//ArrayWrapper<PriWrapper> pls = sw.GetPRIs();
+	//for (int i = 0; i < pls.Count(); i++) {
+	//	auto pl = pls.Get(i);
+	//	if (pl.IsNull())continue;
+	//	if (pl.GetTeamNum() == 255)continue;
+	//	resultData res = {
+	//		pl.GetPlayerName().ToString(),
+	//		pl.GetTeamNum(),
+	//		pl.GetMatchScore(),
+	//		pl.GetMatchGoals(),
+	//		pl.GetMatchAssists(),
+	//		pl.GetMatchSaves(),
+	//		pl.GetMatchShots(),
+	//		pl.GetMatchDemolishes(),
+	//		pl.GetBallTouches(),
+	//	};
+	//	MatchResults.push_back(res);
+	//}
+	////orange H->L -> blue H->L
+	//std::sort(MatchResults.begin(), MatchResults.end(), [](const resultData& a, const resultData& b) {return(a.score > b.score); });
+	//std::sort(MatchResults.begin(), MatchResults.end(), [](const resultData& a, const resultData& b) {return(a.team > b.team); });
+	//for (const resultData r : MatchResults) {
+	//	cvarManager->log(r.name + ":" + TOS(r.score));
+	//}
 }
 
 
@@ -153,7 +153,7 @@ void PraS::createNameTable(bool isForcedRun)
 		
 	}
 	//ƒ`[ƒ€‚Åsort
-	std::sort(OwnerMap.begin(), OwnerMap.end(), [](const playerData& a, const playerData& b) {return(a.team > b.team); });
+	//std::sort(OwnerMap.begin(), OwnerMap.end(), [](const playerData& a, const playerData& b) {return(a.team > b.team); });
 
 	for (int i = 0; i < OwnerMap.size(); i++) {
 		auto p = OwnerMap[i];
@@ -177,20 +177,20 @@ void PraS::tick(std::string eventName) {
 	}
 
 	//----------boost-------------//
-	if (isBoostWatching) {
-		auto cars = gw.GetCars();
-		for (int i = 0; i < cars.Count(); i++) {
-			auto car = cars.Get(i);
-			//!!!!!!!!!----only Bot--!!!!!!!!//
-			std::string name = "Player_Bot_" + car.GetOwnerName();
-			if (car.IsNull())continue;
-			auto boostCom = car.GetBoostComponent();
-			if (boostCom.IsNull())continue;
-			int boost = int(boostCom.GetCurrentBoostAmount() * 100);
-			//if (boost != Boosts[i])sendSocket("b" + TOS(boost) + ":" + TOS(OwnerIndexMap[name]));
-			Boosts[i] = boost;
-		}
-	}
+	//if (isBoostWatching) {
+	//	auto cars = gw.GetCars();
+	//	for (int i = 0; i < cars.Count(); i++) {
+	//		auto car = cars.Get(i);
+	//		//!!!!!!!!!----only Bot--!!!!!!!!//
+	//		std::string name = "Player_Bot_" + car.GetOwnerName();
+	//		if (car.IsNull())continue;
+	//		auto boostCom = car.GetBoostComponent();
+	//		if (boostCom.IsNull())continue;
+	//		int boost = int(boostCom.GetCurrentBoostAmount() * 100);
+	//		//if (boost != Boosts[i])sendSocket("b" + TOS(boost) + ":" + TOS(OwnerIndexMap[name]));
+	//		Boosts[i] = boost;
+	//	}
+	//}
 	//---------------------------//
 	if (PlayerMap.count(actorName) == 0) return;
 
