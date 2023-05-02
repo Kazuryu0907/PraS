@@ -31,6 +31,7 @@ class PraS: public BakkesMod::Plugin::BakkesModPlugin/*, public BakkesMod::Plugi
 	void initSocket();
 	void endSocket();
 	bool sendSocket(std::string);
+	void sendDummmyData();
 
 	// Inherited via PluginSettingsWindow
 	/*
@@ -62,6 +63,8 @@ private:
 	SOCKET sock;
 	struct sockaddr_in server;
 	std::unordered_map<std::string,std::shared_ptr<PriWrapper>> PlayerMap;
+
+	bool isSendSocket = false;
 	
 	struct playerData {
 		std::string name;
