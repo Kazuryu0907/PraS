@@ -24,8 +24,6 @@ void PraS::onLoad()
 	gameWrapper->HookEvent("Function TAGame.Camera_TA.OnViewTargetChanged", std::bind(&PraS::updatePlayerCam, this, std::placeholders::_1));
 	//Function GameEvent_Soccar_TA.Active.StartRound
 	gameWrapper->HookEvent("Function GameEvent_Soccar_TA.Active.BeginState", std::bind(&PraS::startGame, this, std::placeholders::_1));
-<<<<<<< Updated upstream
-=======
 	struct DemolishData {
 		uintptr_t attacker;
 	};
@@ -38,13 +36,12 @@ void PraS::onLoad()
 		DemolishParams* d_params = (DemolishParams*)params;
 		CarWrapper attacker = CarWrapper(d_params->attacker);
 		if (attacker.IsNull())return;
-		std::string attackerName = "Player_" + attacker.GetOwnerName();//player‚Ì‚Ýl—¶
+		std::string attackerName = "Player_" + attacker.GetOwnerName();//playerï¿½Ì‚Ýlï¿½ï¿½
 		if (OwnerIndexMap.count(attackerName) != 0) {
 			sendSocket("?d:" + TOS(OwnerIndexMap[attackerName]));//demo
 		}
 		});
 	gameWrapper->HookEvent("Function ReplayDirector_TA.PlayingHighlights.PlayRandomHighlight", [this](std::string eventName) {sendSocket("endStats"); });
->>>>>>> Stashed changes
 	gameWrapper->HookEvent("Function TAGame.GameEvent_Soccar_TA.EventPlayerScored", std::bind(&PraS::scored, this, std::placeholders::_1));
 
 	//Function TAGame.GameEvent_Soccar_TA.EventPlayerScored
@@ -101,12 +98,6 @@ void PraS::scored(std::string eventName) {
 }
 void PraS::startGame(std::string eventName) {
 	createNameTable();
-<<<<<<< Updated upstream
-	ServerWrapper server = gameWrapper->GetOnlineGame();
-	CameraWrapper camera = gameWrapper->GetCamera();
-	auto actorName = camera.GetFocusActor();
-	currentFocusActorName = actorName;
-=======
 	ServerWrapper sw = gameWrapper->GetOnlineGame();
 	if (sw.IsNull())return;
 	if(sw.GetTotalScore() == 0)sendSocket("start");
@@ -158,7 +149,6 @@ void PraS::endGame(std::string eventName) {
 		sendSocket("eb:" + TOS(r.touches) + ":" + TOS(i));
 		i++;
 	}
->>>>>>> Stashed changes
 }
 
 std::string PraS::split(const std::string& s) {
@@ -178,8 +168,6 @@ void PraS::createNameTable()
 	ServerWrapper sw = gameWrapper->GetOnlineGame();
 	if (sw.IsNull())return;
 	ArrayWrapper<PriWrapper> pls = sw.GetPRIs();
-<<<<<<< Updated upstream
-=======
 	ArrayWrapper<CarWrapper> cars = sw.GetCars();
 	
 	//only run first or onload
@@ -193,7 +181,6 @@ void PraS::createNameTable()
 	UniqueID2DisplayName.clear();
 	OwnerIndexMap.clear();
 	//----------------//
->>>>>>> Stashed changes
 	for (int i = 0; i < pls.Count(); i++) {
 		auto pl = pls.Get(i);
 		if (pl.IsNull())continue;
@@ -207,31 +194,18 @@ void PraS::createNameTable()
 		PlayerToDisplayName[name] = std::to_string(i);
 	//	PlayerToDisplayName[name] = pl.GetOldName().ToString();
 		auto ppl = std::make_shared<PriWrapper>(pl);
-<<<<<<< Updated upstream
-		PlayerMap[name] = ppl;
-	}
-}
-
-void PraS::updateScore(std::string eventName) {
-	if (PlayerMap.count(currentFocusActorName) == 0) {
-		//cvarManager->log(currentFocusActorName);
-		//cvarManager->log("Name is 0");
-		return;
-	}
-	auto pl = PlayerMap[currentFocusActorName];
-=======
 
 		PlayerMap[displayName] = ppl;
 		DisplayName2Id[displayName] = playerId;
 		UniqueID2DisplayName["Player_" + pl.GetUniqueIdWrapper().GetIdString()] = displayName;
 
-		if (pl.GetTeamNum() != 255) {//not ŠÏíŽÒ
+		if (pl.GetTeamNum() != 255) {//not ï¿½Ïï¿½ï¿½
 			playerData p = { displayName, pl.GetTeamNum()};//isblue
 			OwnerMap.push_back(p);
 		}
 		
 	}
-	//ƒ`[ƒ€‚Åsort
+	//ï¿½`ï¿½[ï¿½ï¿½ï¿½ï¿½sort
 	std::sort(OwnerMap.begin(), OwnerMap.end(), [](const playerData& a, const playerData& b) {return(a.team > b.team); });
 
 	for (int i = 0; i < OwnerMap.size(); i++) {
@@ -274,7 +248,6 @@ void PraS::tick(std::string eventName) {
 	if (PlayerMap.count(actorName) == 0) return;
 
 	auto pl = PlayerMap[actorName];
->>>>>>> Stashed changes
 	currentFocusActorScore = pl->GetMatchScore();
 	if (currentFocusActorScore != preFocusActorScore) {
 		std::string msg = currentFocusActorName + ":" + std::to_string(currentFocusActorScore);
