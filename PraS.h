@@ -96,7 +96,7 @@ private:
 	std::string preFocusActorName = "";
 	int preFocusActorScore = 0;
 	int dst_socket;
-
+	std::string actorName;
 	bool isBoostWatching = false;
 
 };

@@ -74,6 +74,7 @@ void PraS::scored(std::string eventName) {
 	isSendSocket = false;
 	sendSocket("f0");
 	sendSocket("scored");
+
 }
 void PraS::startGame(std::string eventName) {
 	isBoostWatching = true;
@@ -88,7 +89,9 @@ void PraS::endGame(std::string eventName) {
 	isSendSocket = false;
 	sendSocket("f0");
 	sendSocket("end");
-	
+	actorName = "";
+	preFocusActorScore = 0;
+
 }
 
 void PraS::sendDummmyData() {
@@ -103,7 +106,12 @@ void PraS::createNameTable(bool isForcedRun)
 	if (sw.IsNull())return;
 	ArrayWrapper<PriWrapper> pls = sw.GetPRIs();
 	ArrayWrapper<CarWrapper> cars = sw.GetCars();
-	
+	for (int i = 0; i < 2; i++) {
+		std::string teamName = sw.GetTeams().Get(i).GetSanitizedTeamName().ToString();
+		cvarManager->log("T" + TOS(i) + ":" + teamName);
+		//blue -> orange
+		sendSocket("T" + TOS(i) + ":" + teamName);
+	}
 	//only run first or onload
 	if (!isForcedRun && sw.GetTotalScore() != 0)return;
 	cvarManager->log("PLS:"+TOS(pls.Count()));
@@ -160,7 +168,7 @@ void PraS::tick(std::string eventName) {
 	auto gw = gameWrapper->GetOnlineGame();
 	if (gw.IsNull())return;
 	CameraWrapper camera = gameWrapper->GetCamera();
-	auto actorName = camera.GetFocusActor();
+	actorName = camera.GetFocusActor();
 	if (actorName != preActorName) {
 		if (actorName == "") {//if flying
 			sendSocket("f0");
@@ -168,8 +176,9 @@ void PraS::tick(std::string eventName) {
 		//‹ó”’‚Å‚àcount‚Éˆø‚Á‚©‚©‚ç‚È‚¢‚Í‚¸...
 		//send FOCUS
 		if (OwnerIndexMap.count(actorName) != 0) {
-			//cvarManager->log(Id2DisplayName[actorName]);
-			if (isSendSocket)sendSocket("p" + Id2DisplayName[actorName] + ":" + TOS(OwnerIndexMap[actorName]));
+			cvarManager->log(actorName);
+			if (isSendSocket)sendSocket("p" + TOS(OwnerIndexMap[actorName]) + ":" + TOS(OwnerIndexMap[actorName]));
+			//if (isSendSocket)sendSocket("p" + Id2DisplayName[actorName] + ":" + TOS(OwnerIndexMap[actorName]));
 			preActorName = actorName;
 		}
 	}
