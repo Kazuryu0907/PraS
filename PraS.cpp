@@ -177,8 +177,8 @@ void PraS::tick(std::string eventName) {
 		//send FOCUS
 		if (OwnerIndexMap.count(actorName) != 0) {
 			cvarManager->log(actorName);
-			if (isSendSocket)sendSocket("p" + TOS(OwnerIndexMap[actorName]) + ":" + TOS(OwnerIndexMap[actorName]));
-			//if (isSendSocket)sendSocket("p" + Id2DisplayName[actorName] + ":" + TOS(OwnerIndexMap[actorName]));
+			//if (isSendSocket)sendSocket("p" + TOS(OwnerIndexMap[actorName]) + ":" + TOS(OwnerIndexMap[actorName]));
+			if (isSendSocket)sendSocket("p" + Id2DisplayName[actorName] + ":" + TOS(OwnerIndexMap[actorName]));
 			preActorName = actorName;
 		}
 	}
