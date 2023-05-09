@@ -1,1 +1,4 @@
-./pyenv
+/pyenv
+/plugins
+/build
+/.vs

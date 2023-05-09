@@ -72,9 +72,7 @@ void PraS::endSocket() {
 void PraS::scored(std::string eventName) {
 	// Flag Down
 	isSendSocket = false;
-	sendSocket("f0");
 	sendSocket("scored");
-
 }
 void PraS::startGame(std::string eventName) {
 	isBoostWatching = true;
